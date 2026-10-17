@@ -14,16 +14,18 @@ let currentPos = 1;
 let appData = [];
 let currentChartMode = 'tail'; 
 
-// Hàm tự động tải file data.json khi vừa mở web
+function registerGame(gameId, config) {
+    GameRegistry[gameId] = config;
+    if (!savedData[gameId]) savedData[gameId] = [];
+}
+
 async function loadServerData() {
     try {
         const response = await fetch('data.json?t=' + new Date().getTime());
         if (response.ok) {
             savedData = await response.json();
         }
-    } catch (e) {
-        // Fallback dùng localStorage nếu fetch lỗi
-    }
+    } catch (e) {}
     updateHomeCounts();
 }
 
@@ -53,6 +55,7 @@ function openGameMenu(gameId) {
     document.getElementById('oddEvenAnalysisView').style.display = 'none';
     document.getElementById('dausoAnalysisView').style.display = 'none';
     document.getElementById('amduongAnalysisView').style.display = 'none';
+    document.getElementById('threeDigitAnalysisView').style.display = 'none';
     
     document.getElementById('btnBack').style.display = 'flex';
     document.getElementById('menuGameTitle').innerText = `🎮 TÍNH NĂNG SOI CẦU: ${currentGame}`;
@@ -85,11 +88,15 @@ function showFeature(featureName) {
         currentView = "amduong";
         document.getElementById('amduongAnalysisView').style.display = 'block';
         renderAmDuongAnalysis();
+    } else if (featureName === 'threeDigitAnalysis') {
+        currentView = "threeDigitAnalysis";
+        document.getElementById('threeDigitAnalysisView').style.display = 'block';
+        renderThreeDigitAnalysis();
     }
 }
 
 function handleBack() {
-    if (['chart', 'tail', 'oddeven', 'dauso', 'amduong'].includes(currentView)) {
+    if (['chart', 'tail', 'oddeven', 'dauso', 'amduong', 'threeDigitAnalysis'].includes(currentView)) {
         openGameMenu(currentGame);
     } else if (currentView === 'menu') {
         goHome();
@@ -98,7 +105,7 @@ function handleBack() {
 
 function goHome() {
     currentView = "home";
-    ['chartView', 'tailAnalysisView', 'oddEvenAnalysisView', 'dausoAnalysisView', 'amduongAnalysisView', 'gameMenuView'].forEach(id => {
+    ['chartView', 'tailAnalysisView', 'oddEvenAnalysisView', 'dausoAnalysisView', 'amduongAnalysisView', 'threeDigitAnalysisView', 'gameMenuView'].forEach(id => {
         document.getElementById(id).style.display = 'none';
     });
     document.getElementById('btnBack').style.display = 'none';
@@ -120,13 +127,19 @@ function checkDataState() {
 function openModal() { document.getElementById('modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-// Dùng lại Regex chuẩn chính xác của bản cũ để tuyệt đối không bị lệch vị trí
+// SỬ DỤNG LẠI THUẬT TOÁN REGEX CHUẨN XÁC TUYỆT ĐỐI CỦA BẢN CŨ
 function processData() {
     const rawText = document.getElementById('dataInput').value;
     if(!rawText.trim()) return;
 
     const gameConfig = GameRegistry[currentGame];
+    if (!gameConfig || !gameConfig.regex) {
+        alert("Cấu hình game chưa hợp lệ!");
+        return;
+    }
+
     let parsed = [], match;
+    gameConfig.regex.lastIndex = 0;
     
     while ((match = gameConfig.regex.exec(rawText)) !== null) {
         parsed.push(gameConfig.parseMatch(match));
@@ -150,6 +163,7 @@ function processData() {
     else if(currentView === 'oddeven') renderOddEvenAnalysis();
     else if(currentView === 'dauso') renderDauSoAnalysis();
     else if(currentView === 'amduong') renderAmDuongAnalysis();
+    else if(currentView === 'threeDigitAnalysis') renderThreeDigitAnalysis();
 }
 
 function clearCurrentGameData() {
@@ -164,6 +178,7 @@ function clearCurrentGameData() {
         else if(currentView === 'oddeven') renderOddEvenAnalysis();
         else if(currentView === 'dauso') renderDauSoAnalysis();
         else if(currentView === 'amduong') renderAmDuongAnalysis();
+        else if(currentView === 'threeDigitAnalysis') renderThreeDigitAnalysis();
     }
 }
 
@@ -211,7 +226,6 @@ function drawChart() {
     }
 }
 
-// 1. BIỂU ĐỒ SỐ ĐẦY ĐỦ
 function drawChartFull() {
     document.getElementById('chartTitleFull').innerText = `BIỂU ĐỒ SỐ ĐẦY ĐỦ - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartFull'); svg.innerHTML = '';
@@ -310,7 +324,6 @@ function drawChartFull() {
     });
 }
 
-// 2. BIỂU ĐỒ SỐ ĐUÔI
 function drawChartTail() {
     document.getElementById('chartTitleTail').innerText = `BIỂU ĐỒ SOI SỐ ĐUÔI - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartTail'); svg.innerHTML = '';
@@ -396,7 +409,6 @@ function drawChartTail() {
     });
 }
 
-// ----------------- TÍNH NĂNG 2: TRA CỨU ĐUÔI SỐ -----------------
 function renderTailAnalysis() {
     const searchVal = document.getElementById('tailSearchInput').value.trim();
     const searchTokens = searchVal ? searchVal.split(/[\s\,]+/) : [];
@@ -478,7 +490,6 @@ function renderTailAnalysis() {
     }
 }
 
-// ----------------- TÍNH NĂNG 3: PHÂN TÍCH CHẮN / LẺ -----------------
 function renderOddEvenAnalysis() {
     const maxNum = (currentGame === 'LOTTO 5/35') ? 35 : ((currentGame === 'MEGA 6/45') ? 45 : 55);
     const evenListEl = document.getElementById('matrixEvenList');
@@ -524,7 +535,6 @@ function highlightOddEvenNumber(numStr) {
     });
 }
 
-// ----------------- TÍNH NĂNG 4: THỐNG KÊ ĐẦU SỐ -----------------
 function renderDauSoAnalysis() {
     const limitVal = document.getElementById('dauKyLimitSelect').value;
     const suggEl = document.getElementById('dausoSuggestions');
@@ -575,7 +585,6 @@ function renderDauSoAnalysis() {
     });
 }
 
-// ----------------- TÍNH NĂNG 5: KHOẢNG CÁCH ÂM DƯƠNG -----------------
 function renderAmDuongAnalysis() {
     const historyEl = document.getElementById('amduongHistoryList');
     historyEl.innerHTML = '';
@@ -604,4 +613,72 @@ function renderAmDuongAnalysis() {
     }
 
     historyEl.innerHTML = rows.reverse().join('');
+}
+
+function renderThreeDigitAnalysis() {
+    const headSearch = document.getElementById('searchHeadInput') ? document.getElementById('searchHeadInput').value.trim() : '';
+    const tailSearch = document.getElementById('searchTailInput') ? document.getElementById('searchTailInput').value.trim() : '';
+    const headHistoryEl = document.getElementById('headHistoryList');
+    const headMissingEl = document.getElementById('headMissingList');
+    const tailHistoryEl = document.getElementById('tailHistoryList');
+    const tailMissingEl = document.getElementById('tailMissingList');
+
+    if (!headHistoryEl) return;
+
+    headHistoryEl.innerHTML = ''; headMissingEl.innerHTML = '';
+    tailHistoryEl.innerHTML = ''; tailMissingEl.innerHTML = '';
+
+    if (appData.length === 0) {
+        const emptyMsg = '<div style="color:var(--text-muted); font-size:11px; text-align:center; padding: 10px;">Chưa có dữ liệu.</div>';
+        headHistoryEl.innerHTML = emptyMsg; tailHistoryEl.innerHTML = emptyMsg;
+        return;
+    }
+
+    const headAppeared = new Set();
+    const tailAppeared = new Set();
+
+    appData.forEach((draw, idx) => {
+        if (draw.length < 3) return;
+        const headTails = [parseInt(draw[0], 10) % 10, parseInt(draw[1], 10) % 10, parseInt(draw[2], 10) % 10].join('');
+        const len = draw.length;
+        const tailTails = [parseInt(draw[len-3], 10) % 10, parseInt(draw[len-2], 10) % 10, parseInt(draw[len-1], 10) % 10].join('');
+
+        headAppeared.add(headTails);
+        tailAppeared.add(tailTails);
+
+        const isHeadMatch = headSearch && headTails.includes(headSearch);
+        const headRow = document.createElement('div');
+        headRow.className = `triple-item ${isHeadMatch ? 'highlight' : ''}`;
+        headRow.innerHTML = `<span>Kỳ #${idx + 1}</span><span style="font-family:monospace; font-weight:bold; font-size:13px; color:var(--primary);">${headTails}</span>`;
+        headHistoryEl.appendChild(headRow);
+
+        const isTailMatch = tailSearch && tailTails.includes(tailSearch);
+        const tailRow = document.createElement('div');
+        tailRow.className = `triple-item ${isTailMatch ? 'highlight' : ''}`;
+        tailRow.innerHTML = `<span>Kỳ #${idx + 1}</span><span style="font-family:monospace; font-weight:bold; font-size:13px; color:var(--primary);">${tailTails}</span>`;
+        tailHistoryEl.appendChild(tailRow);
+    });
+
+    let headMissingHTML = '', tailMissingHTML = '';
+    let headMissingCount = 0, tailMissingCount = 0;
+
+    for (let i = 0; i <= 999; i++) {
+        const numStr = i.toString().padStart(3, '0');
+        if (!headAppeared.has(numStr)) {
+            if (!headSearch || numStr.includes(headSearch)) {
+                headMissingHTML += `<div class="triple-item" style="justify-content:center; color:#ef4444; font-family:monospace; font-weight:bold;">${numStr}</div>`;
+                headMissingCount++;
+            }
+        }
+        if (!tailAppeared.has(numStr)) {
+            if (!tailSearch || numStr.includes(tailSearch)) {
+                tailMissingHTML += `<div class="triple-item" style="justify-content:center; color:#ef4444; font-family:monospace; font-weight:bold;">${numStr}</div>`;
+                tailMissingCount++;
+            }
+        }
+    }
+
+    const allFoundMsg = '<div style="color:#10b981; font-size:11px; text-align:center; padding: 10px;">Đã về hết!</div>';
+    headMissingEl.innerHTML = headMissingCount > 0 ? headMissingHTML : allFoundMsg;
+    tailMissingEl.innerHTML = tailMissingCount > 0 ? tailMissingHTML : allFoundMsg;
 }
