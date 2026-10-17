@@ -1,0 +1,12 @@
+vietlott-pro/
+├── index.html
+├── css/
+│   └── style.css          # (Giữ nguyên file CSS ở bước trước)
+└── js/
+    ├── core.js            # Lõi hệ thống: Vẽ biểu đồ, Lưu trữ bộ nhớ
+    └── games/             # MỖI GAME 1 FILE RIÊNG ĐỂ DỄ PHÁT TRIỂN
+        ├── mega645.js
+        ├── power655.js
+        ├── max3dpro.js
+        ├── keno.js
+        └── lotto535.js

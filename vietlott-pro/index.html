@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietlott Soi Cầu Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 onclick="goHome()">⚡ VIETLOTT PRO</h1>
+        <div class="header-actions">
+            <button class="btn" id="btnBack" style="display: none;" onclick="handleBack()">[Quay lại]</button>
+            <button class="btn btn-primary" onclick="openModal()">📋 Nạp Dữ Liệu</button>
+        </div>
+    </div>
+
+    <!-- Màn hình chính chọn Game (Home View) -->
+    <div id="homeView">
+        <div class="home-title">HỆ THỐNG SOI CẦU VIETLOTT & XSKT</div>
+        <div class="home-subtitle">Chọn loại hình xổ số bạn muốn phân tích thuật toán nhịp cầu</div>
+
+        <div class="game-grid">
+            <div class="game-card" onclick="openGameMenu('MEGA 6/45')">
+                <span class="game-badge badge-mega">MEGA 6/45</span>
+                <h3>MEGA 6/45</h3>
+                <p>Thống kê nhịp cầu 6 vị trí số từ 01 đến 45.</p>
+                <div class="game-footer">
+                    <span>SOI CẦU NGAY &rarr;</span>
+                    <span class="game-count" id="count-mega">0 kỳ</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="openGameMenu('POWER 6/55')">
+                <span class="game-badge badge-power">POWER 6/55</span>
+                <h3>POWER 6/55</h3>
+                <p>Phân tích biến động các dãy số từ 01 đến 55.</p>
+                <div class="game-footer">
+                    <span>SOI CẦU NGAY &rarr;</span>
+                    <span class="game-count" id="count-power">0 kỳ</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="openGameMenu('MAX 3D PRO')">
+                <span class="game-badge badge-max">MAX 3D PRO</span>
+                <h3>MAX 3D PRO</h3>
+                <p>Soi cầu nhịp sóng 6 vị trí số Max 3D Pro.</p>
+                <div class="game-footer">
+                    <span>SOI CẦU NGAY &rarr;</span>
+                    <span class="game-count" id="count-max">0 kỳ</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="openGameMenu('KENO')">
+                <span class="game-badge badge-keno">KENO</span>
+                <h3>KENO</h3>
+                <p>Phân tích cầu Keno siêu tốc quay nhanh.</p>
+                <div class="game-footer">
+                    <span>SOI CẦU NGAY &rarr;</span>
+                    <span class="game-count" id="count-keno">0 kỳ</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="openGameMenu('LOTTO 5/35')">
+                <span class="game-badge badge-lotto">LOTTO 5/35</span>
+                <h3>LOTTO 5/35</h3>
+                <p>Thống kê nhịp cầu 5 bóng số Vietlott Lotto.</p>
+                <div class="game-footer">
+                    <span>SOI CẦU NGAY &rarr;</span>
+                    <span class="game-count" id="count-lotto">0 kỳ</span>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="openGameMenu('XSKT (GĐB)')">
+                <span class="game-badge badge-xskt">XSKT (GĐB)</span>
+                <h3>XỔ SỐ KIẾN THIẾT</h3>
+                <p>Phân tích 6 số Giải Đặc Biệt Xổ Số Kiến Thiết.</p>
+                <div class="game-footer">
+                    <span>SOI CẦU NGAY &rarr;</span>
+                    <span class="game-count" id="count-xskt">0 kỳ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình Menu Tính Năng -->
+    <div id="gameMenuView" style="display: none;">
+        <h2 id="menuGameTitle" style="color: var(--primary); text-align: center; margin-bottom: 20px;"></h2>
+        <div class="feature-grid">
+            <div class="feature-card" onclick="showFeature('chart')">
+                <div class="feature-icon">📊</div>
+                <h3>1. Biểu Đồ Soi Cầu Vị Trí</h3>
+                <p>Xem đường đi nhịp cầu Tài/Xỉu, Chẵn/Lẻ và Khoảng cách bước nhảy từng vị trí bóng.</p>
+            </div>
+            <div class="feature-card" onclick="showFeature('tail')">
+                <div class="feature-icon">🔍</div>
+                <h3>2. Tra Cứu Đuôi Số & Báo Cặp Đuôi Chưa Về</h3>
+                <p>Tìm kiếm số/đuôi số, gom đuôi trùng và cảnh báo cặp đuôi chưa về (Mới nhất lên đầu).</p>
+            </div>
+            <div class="feature-card" onclick="showFeature('oddeven')">
+                <div class="feature-icon">☯️</div>
+                <h3>3. Phân Tích Chẵn / Lẻ Chi Tiết</h3>
+                <p>Dàn số Chẵn/Lẻ chuẩn ô vuông, tự động bồi đỏ số theo kỳ chọn, kết quả cân giữa rõ nét.</p>
+            </div>
+            <div class="feature-card" onclick="showFeature('dauso')">
+                <div class="feature-icon">🔢</div>
+                <h3>4. Thống Kê Đầu Số & Cảnh Báo Đầu Chưa Về</h3>
+                <p>Soi chữ số hàng chục từng vị trí, lọc 10-100 kỳ và gợi ý các đầu chưa ra.</p>
+            </div>
+            <div class="feature-card" onclick="showFeature('amduong')">
+                <div class="feature-icon">📐</div>
+                <h3>5. Khoảng Cách Âm Dương Giữa Các Vị Trí</h3>
+                <p>So sánh bước nhảy chênh lệch giữa các số liên tiếp trong kỳ quay (+5 +6 +9...).</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TÍNH NĂNG 1: BIỂU ĐỒ SOI CẦU -->
+    <div id="chartView" style="display: none;">
+        <h2 id="currentGameTitle" style="font-size: 15px; color: var(--primary); margin: 0 0 10px 0;">📊 ĐANG SOI CẦU BIỂU ĐỒ</h2>
+        <div id="emptyState">
+            <h3 style="margin-top:0; color: var(--primary);">CHƯA CÓ DỮ LIỆU KỲ QUAY</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Vui lòng bấm nút bên dưới để dán danh sách kết quả vào hệ thống.</p>
+            <button class="btn btn-primary" style="margin: 0 auto; padding: 8px 16px;" onclick="openModal()">📋 Nạp Dữ Liệu Ngay</button>
+        </div>
+
+        <div id="analysisContent" style="display: none;">
+            <div class="position-tabs" id="posTabs"></div>
+
+            <!-- Nút chuyển đổi: Đưa Biểu Đồ Soi Số Đuôi lên đầu tiên -->
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button class="btn btn-primary" id="btnChartTail" onclick="switchChartType('tail')">📊 Biểu Đồ Soi Số Đuôi</button>
+                <button class="btn" id="btnChartFull" onclick="switchChartType('full')">📈 Biểu Đồ Số Đầy Đủ</button>
+            </div>
+
+            <!-- BIỂU ĐỒ 1: SỐ ĐUÔI (MẶC ĐỊNH HIỂN THỊ TRƯỚC) -->
+            <div class="chart-container" id="containerChartTail">
+                <div class="chart-header">
+                    <div class="chart-title"><div class="dot-indicator"></div><h3 id="chartTitleTail">BIỂU ĐỒ SOI SỐ ĐUÔI</h3></div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: var(--red-tai)"></div>Tài (5-9)</div>
+                        <div class="legend-item"><div class="legend-color" style="background: var(--blue-xiu)"></div>Xỉu (0-4)</div>
+                    </div>
+                </div>
+                <div class="chart-scroll-wrap" id="scrollTail">
+                    <div class="chart-area" id="chartAreaTail" style="height: 200px;">
+                        <div class="y-axis">
+                            <span class="y-label">9</span><span class="y-label">8</span><span class="y-label">7</span><span class="y-label">6</span><span class="y-label">5</span>
+                            <span class="y-label">4</span><span class="y-label">3</span><span class="y-label">2</span><span class="y-label">1</span><span class="y-label">0</span>
+                        </div>
+                        <svg id="svgChartTail"></svg>
+                    </div>
+                </div>
+                <div class="boxes-grid">
+                    <div class="square-box"><h4>🔴 TÀI / 🔵 XỈU</h4><div class="box-content" id="boxTaiXiuTail"></div></div>
+                    <div class="square-box"><h4>🔴 CHẴN / ⚪ LẺ</h4><div class="box-content" id="boxChanLeTail"></div></div>
+                    <div class="square-box"><h4>📐 KHOẢNG CÁCH</h4><div class="box-content" id="boxKhoangCachTail"></div></div>
+                </div>
+            </div>
+
+            <!-- BIỂU ĐỒ 2: SỐ ĐẦY ĐỦ (HIỂN THỊ KHI BẤM NÚT) -->
+            <div class="chart-container" id="containerChartFull" style="display: none;">
+                <div class="chart-header">
+                    <div class="chart-title"><div class="dot-indicator"></div><h3 id="chartTitleFull">BIỂU ĐỒ SỐ ĐẦY ĐỦ</h3></div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: var(--primary)"></div>Giá trị số thực tế</div>
+                    </div>
+                </div>
+                <div class="chart-scroll-wrap" id="scrollFull">
+                    <div class="chart-area" id="chartAreaFull" style="height: 220px;">
+                        <div class="y-axis" id="yAxisFull"></div>
+                        <svg id="svgChartFull"></svg>
+                    </div>
+                </div>
+                <div class="boxes-grid">
+                    <div class="square-box"><h4>🔴 TÀI / 🔵 XỈU</h4><div class="box-content" id="boxTaiXiuFull"></div></div>
+                    <div class="square-box"><h4>🔴 CHẴN / ⚪ LẺ</h4><div class="box-content" id="boxChanLeFull"></div></div>
+                    <div class="square-box"><h4>📐 KHOẢNG CÁCH</h4><div class="box-content" id="boxKhoangCachFull"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TÍNH NĂNG 2: TRA CỨU ĐUÔI SỐ -->
+    <div id="tailAnalysisView" style="display: none;">
+        <h2 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;">🔍 TRA CỨU ĐUÔI SỐ & BÁO CẶP ĐUÔI CHƯA VỀ</h2>
+        <div class="search-bar-wrap">
+            <input type="text" id="tailSearchInput" placeholder="Nhập số/đuôi số tìm kiếm (Ví dụ: 04 09 16... hoặc 4 9 6)..." oninput="renderTailAnalysis()">
+        </div>
+
+        <div class="tail-layout">
+            <div class="tail-main-box">
+                <h4>📋 DANH SÁCH CÁC KỲ (MỚI NHẤT TRÊN ĐẦU)</h4>
+                <div id="tailSearchResults" class="tail-list-scroll"></div>
+            </div>
+            <div class="tail-sub-grid">
+                <div class="tail-sub-box">
+                    <h4>🔴 KỲ CÓ TỪ 2-3 SỐ TRÙNG ĐUÔI</h4>
+                    <div id="boxDuplicateTails" class="tail-list-scroll"></div>
+                </div>
+                <div class="tail-sub-box">
+                    <h4>🚨 BÁO CÁO CÁC CẶP ĐÔI ĐUÔI CHƯA VỀ</h4>
+                    <div id="boxMissingTailPairs" class="tail-list-scroll"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TÍNH NĂNG 3: PHÂN TÍCH CHẮN / LẺ -->
+    <div id="oddEvenAnalysisView" style="display: none;">
+        <h2 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;">☯️ PHÂN TÍCH CHẮN / LẺ CHI TIẾT</h2>
+        <div class="oddeven-matrix-box">
+            <h4>DÀN SỐ ĐẦY ĐỦ</h4>
+            <div class="matrix-grid">
+                <div class="matrix-col">
+                    <h5 style="color: #ef4444; margin: 0 0 8px 0; text-align: center;">DÀN SỐ CHẴN</h5>
+                    <div id="matrixEvenList" class="matrix-numbers"></div>
+                </div>
+                <div class="matrix-col">
+                    <h5 style="color: #38bdf8; margin: 0 0 8px 0; text-align: center;">DÀN SỐ LẺ</h5>
+                    <div id="matrixOddList" class="matrix-numbers"></div>
+                </div>
+            </div>
+        </div>
+        <div class="oddeven-history-box" style="margin-top: 15px;">
+            <h4>📊 KẾT QUẢ CHẮN / LẺ THEO KỲ (MỚI NHẤT TRÊN ĐẦU - BẤM ĐỂ BÔI ĐỎ SỐ)</h4>
+            <div id="oddEvenHistoryList" class="tail-list-scroll"></div>
+        </div>
+    </div>
+
+    <!-- TÍNH NĂNG 4: THỐNG KÊ ĐẦU SỐ -->
+    <div id="dausoAnalysisView" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 style="font-size: 15px; color: var(--primary); margin: 0;">🔢 THỐNG KÊ ĐẦU SỐ TỪNG VỊ TRÍ</h2>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted);">
+                <span>Số kỳ hiển thị:</span>
+                <select id="dauKyLimitSelect" onchange="renderDauSoAnalysis()" style="background: var(--bg-card); color: #fff; border: 1px solid #3b4b6b; padding: 4px 8px; border-radius: 4px;">
+                    <option value="10">10 kỳ gần nhất</option>
+                    <option value="30">30 kỳ gần nhất</option>
+                    <option value="50">50 kỳ gần nhất</option>
+                    <option value="100">100 kỳ gần nhất</option>
+                    <option value="all">Tất cả các kỳ</option>
+                </select>
+            </div>
+        </div>
+        <div class="dauso-container">
+            <div class="dauso-box" style="margin-bottom: 12px;">
+                <h4>💡 GỢI Ý ĐẦU SỐ CHƯA VỀ THEO TỪNG VỊ TRÍ</h4>
+                <div id="dausoSuggestions" class="dauso-sugg-grid"></div>
+            </div>
+            <div class="dauso-box">
+                <h4>📋 ĐẦU SỐ CỦA TỪNG VỊ TRÍ (MỚI NHẤT TRÊN ĐẦU)</h4>
+                <div id="dausoHistoryList" class="tail-list-scroll" style="max-height: 280px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TÍNH NĂNG 5: KHOẢNG CÁCH ÂM DƯƠNG -->
+    <div id="amduongAnalysisView" style="display: none;">
+        <h2 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;">📐 KHOẢNG CÁCH ÂM DƯƠNG GIỮA CÁC VỊ TRÍ</h2>
+        <div class="amduong-box">
+            <h4>📐 SO SÁNH KHOẢNG CÁCH GIỮA CÁC VỊ TRÍ (MỚI NHẤT TRÊN ĐẦU)</h4>
+            <div id="amduongHistoryList" class="tail-list-scroll" style="max-height: 350px;"></div>
+        </div>
+    </div>
+
+    <!-- Modal Dán Dữ Liệu -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <h2 style="margin-top:0; font-size: 16px; color: var(--primary)">QUẢN LÝ KỲ QUAY</h2>
+            <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;" id="modalDesc">Dán kết quả kỳ quay vào đây.</p>
+            <textarea id="dataInput" placeholder="Ví dụ: 05 12 21 28 35"></textarea>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <button class="btn" style="background: #ef4444; border-color: #dc2626;" onclick="clearCurrentGameData()">🗑 Xóa Dữ Liệu</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="closeModal()">Hủy Bỏ</button>
+                    <button class="btn btn-primary" onclick="processData()">Xác Nhận & Phân Tích</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">Hệ thống Soi Cầu Vietlott Pro &copy; 2026</div>
+
+    <script src="js/core.js"></script>
+</body>
+</html>
