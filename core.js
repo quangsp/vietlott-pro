@@ -1,10 +1,10 @@
 const GameRegistry = {
-    'MEGA 6/45': { numCount: 6, maxVal: 45, desc: "Dán kết quả Mega 6/45 (6 số mỗi kỳ từ 01 đến 45)", placeholder: "Ví dụ: 05 12 23 34 41 45" },
-    'POWER 6/55': { numCount: 6, maxVal: 55, desc: "Dán kết quả Power 6/55 (6 số mỗi kỳ từ 01 đến 55)", placeholder: "Ví dụ: 02 11 19 28 33 40" },
-    'MAX 3D PRO': { numCount: 6, maxVal: 99, desc: "Dán kết quả Max 3D Pro (6 vị trí số)", placeholder: "Ví dụ: 12 34 56 78 90 12" },
-    'KENO': { numCount: 5, maxVal: 80, desc: "Dán kết quả Keno", placeholder: "Ví dụ: 03 15 21 30 39" },
-    'LOTTO 5/35': { numCount: 6, maxVal: 35, desc: "Dán kết quả Lotto 5/35 (6 vị trí số)", placeholder: "Ví dụ: 01 09 18 27 31 12" },
-    'XSKT (GĐB)': { numCount: 6, maxVal: 99, desc: "Dán kết quả Xổ Số Kiến Thiết (6 số)", placeholder: "Ví dụ: 07 13 20 26 35 41" }
+    'MEGA 6/45': { numCount: 6, maxVal: 45, desc: "Dán kết quả Mega 6/45 (6 số mỗi kỳ từ 01 đến 45)", placeholder: "Ví dụ: 05 12 23 34 41 45", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
+    'POWER 6/55': { numCount: 6, maxVal: 55, desc: "Dán kết quả Power 6/55 (6 số mỗi kỳ từ 01 đến 55)", placeholder: "Ví dụ: 02 11 19 28 33 40", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
+    'MAX 3D PRO': { numCount: 6, maxVal: 99, desc: "Dán kết quả Max 3D Pro (6 vị trí số)", placeholder: "Ví dụ: 12 34 56 78 90 12", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
+    'KENO': { numCount: 5, maxVal: 80, desc: "Dán kết quả Keno", placeholder: "Ví dụ: 03 15 21 30 39", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5]] },
+    'LOTTO 5/35': { numCount: 6, maxVal: 35, desc: "Dán kết quả Lotto 5/35 (6 vị trí số)", placeholder: "Ví dụ: 01 09 18 27 31 12", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
+    'XSKT (GĐB)': { numCount: 6, maxVal: 99, desc: "Dán kết quả Xổ Số Kiến Thiết (6 số)", placeholder: "Ví dụ: 07 13 20 26 35 41", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] }
 };
 
 let savedData = {};
@@ -14,6 +14,7 @@ let currentPos = 1;
 let appData = [];
 let currentChartMode = 'tail'; 
 
+// Hàm tự động tải file data.json khi vừa mở web
 async function loadServerData() {
     try {
         const response = await fetch('data.json?t=' + new Date().getTime());
@@ -122,36 +123,23 @@ function checkDataState() {
 function openModal() { document.getElementById('modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-// HÀM XỬ LÝ DỮ LIỆU ĐƯỢC FIX CHUẨN XÁC 100% VỊ TRÍ TỪ TRÁI QUA PHẢI
 function processData() {
     const rawText = document.getElementById('dataInput').value;
     if(!rawText.trim()) return;
 
     let parsed = [];
     const lines = rawText.split('\n');
-    const requiredCount = GameRegistry[currentGame].numCount;
 
     lines.forEach(line => {
         if (!line.trim()) return;
 
-        // Xóa sạch ngày tháng (VD: 17/10/2026 hoặc T7, 17/10/2026) ở đầu dòng
-        let cleanLine = line.replace(/(?:T[2-7]|CN)?[\s\,]*\d{1,2}\/\d{1,2}\/\d{4}/g, '');
-        // Xóa các dãy số tiền thưởng quá dài ở cuối dòng
-        cleanLine = cleanLine.replace(/\d{7,}/g, '');
-
-        // Quét lấy tất cả các cặp 2 chữ số chuẩn xác
-        let matches = cleanLine.match(/\b\d{2}\b/g);
+        // Tự động lọc bỏ chuỗi tiền thưởng dài phía sau, sau đó quét lấy 6 số cuối cùng
+        let cleanLine = line.replace(/\d{9,}/g, '');
+        let finalPairs = cleanLine.match(/\b\d{2}\b/g);
         
-        if (matches && matches.length >= requiredCount) {
-            // Lấy đúng số lượng bóng cần thiết từ trái sang phải (bỏ qua số dư thừa đầu/cuối)
-            let targetBalls = matches.slice(0, requiredCount);
-            
-            // Xử lý chống lệch nếu dòng có dính số thứ tự kỳ quay ở đầu
-            if (matches.length > requiredCount && parseInt(matches[0], 10) <= 9 && !currentGame.includes('MAX')) {
-                targetBalls = matches.slice(1, requiredCount + 1);
-            }
-
-            parsed.push(targetBalls);
+        if (finalPairs && finalPairs.length >= 6) {
+            let targetBalls = finalPairs.slice(-6);
+            parsed.push([targetBalls[0], targetBalls[1], targetBalls[2], targetBalls[3], targetBalls[4], targetBalls[5]]);
         }
     });
 
@@ -190,6 +178,7 @@ function clearCurrentGameData() {
     }
 }
 
+// ----------------- CHUYỂN ĐỔI GIỮA 2 BIỂU ĐỒ -----------------
 function switchChartType(mode) {
     currentChartMode = mode;
     const btnFull = document.getElementById('btnChartFull');
@@ -211,6 +200,7 @@ function switchChartType(mode) {
     drawChart();
 }
 
+// ----------------- TÍNH NĂNG 1: BIỂU ĐỒ -----------------
 function renderTabs() {
     const tabsDiv = document.getElementById('posTabs'); tabsDiv.innerHTML = '';
     const numCount = GameRegistry[currentGame].numCount;
@@ -232,12 +222,14 @@ function drawChart() {
     }
 }
 
+// 1. BIỂU ĐỒ SỐ ĐẦY ĐỦ
 function drawChartFull() {
     document.getElementById('chartTitleFull').innerText = `BIỂU ĐỒ SỐ ĐẦY ĐỦ - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartFull'); svg.innerHTML = '';
     const yAxis = document.getElementById('yAxisFull'); yAxis.innerHTML = '';
 
     let maxVal = GameRegistry[currentGame].maxVal || 45;
+    // Cấu hình chuẩn riêng cho Lotto 5/35: Vị trí 1-5 max 35, riêng vị trí số 6 max 12
     if (currentGame === 'LOTTO 5/35') {
         maxVal = (currentPos === 6) ? 12 : 35;
     }
@@ -330,6 +322,7 @@ function drawChartFull() {
     });
 }
 
+// 2. BIỂU ĐỒ SỐ ĐUÔI
 function drawChartTail() {
     document.getElementById('chartTitleTail').innerText = `BIỂU ĐỒ SOI SỐ ĐUÔI - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartTail'); svg.innerHTML = '';
@@ -415,6 +408,7 @@ function drawChartTail() {
     });
 }
 
+// ----------------- TÍNH NĂNG 2: TRA CỨU ĐUÔI SỐ -----------------
 function renderTailAnalysis() {
     const searchVal = document.getElementById('tailSearchInput').value.trim();
     const searchTokens = searchVal ? searchVal.split(/[\s\,]+/) : [];
@@ -496,6 +490,7 @@ function renderTailAnalysis() {
     }
 }
 
+// ----------------- TÍNH NĂNG 3: PHÂN TÍCH CHẮN / LẺ -----------------
 function renderOddEvenAnalysis() {
     const maxNum = (currentGame === 'LOTTO 5/35') ? 35 : ((currentGame === 'MEGA 6/45') ? 45 : 55);
     const evenListEl = document.getElementById('matrixEvenList');
@@ -541,6 +536,7 @@ function highlightOddEvenNumber(numStr) {
     });
 }
 
+// ----------------- TÍNH NĂNG 4: THỐNG KÊ ĐẦU SỐ -----------------
 function renderDauSoAnalysis() {
     const limitVal = document.getElementById('dauKyLimitSelect').value;
     const suggEl = document.getElementById('dausoSuggestions');
@@ -591,6 +587,7 @@ function renderDauSoAnalysis() {
     });
 }
 
+// ----------------- TÍNH NĂNG 5: KHOẢNG CÁCH ÂM DƯƠNG -----------------
 function renderAmDuongAnalysis() {
     const historyEl = document.getElementById('amduongHistoryList');
     historyEl.innerHTML = '';
@@ -612,7 +609,7 @@ function renderAmDuongAnalysis() {
         rows.push(`
             <div class="draw-row">
                 <span>Kỳ #${i} ➔ #${i+1}</span>
-                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('    ')}</span>
+                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('   ')}</span>
                 <span style="color:var(--text-muted); font-size:10px;">(${curr.join(' ')})</span>
             </div>
         `);
