@@ -123,7 +123,7 @@ function checkDataState() {
 function openModal() { document.getElementById('modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-// ----------------- XỬ LÝ DỮ LIỆU ĐÃ ĐƯỢC CHỈNH SỬA LỖI LỆCH VỊ TRÍ -----------------
+// ----------------- XỬ LÝ NẠP DỮ LIỆU ĐÃ SỬA CHUẨN LỆCH VỊ TRÍ -----------------
 function processData() {
     const rawText = document.getElementById('dataInput').value;
     if(!rawText.trim()) return;
@@ -134,12 +134,19 @@ function processData() {
     lines.forEach(line => {
         if (!line.trim()) return;
 
-        // Quét lấy tất cả các cặp 2 chữ số có trong dòng
+        // Quét lấy tất cả các cặp 2 chữ số trong dòng
         let finalPairs = line.match(/\b\d{2}\b/g);
         
         if (finalPairs && finalPairs.length >= 6) {
-            // Lấy chính xác 6 số đầu tiên từ trái qua phải (bỏ số phụ và giải thưởng ở đuôi)
-            let targetBalls = finalPairs.slice(0, 6);
+            let targetBalls = [];
+            
+            // Trường hợp dán văn bản có dính 1 số ở đầu (ngày/thứ) hoặc số đặc biệt Jackpot ở cuối
+            if (finalPairs.length >= 7) {
+                targetBalls = finalPairs.slice(1, 7); // Dịch 1 bước: Bỏ con số đầu tiên dính ngày, lấy đúng 6 số chính tiếp theo
+            } else {
+                targetBalls = finalPairs.slice(0, 6);
+            }
+
             parsed.push([targetBalls[0], targetBalls[1], targetBalls[2], targetBalls[3], targetBalls[4], targetBalls[5]]);
         }
     });
