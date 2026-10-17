@@ -123,6 +123,7 @@ function checkDataState() {
 function openModal() { document.getElementById('modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
+// ----------------- XỬ LÝ DỮ LIỆU ĐÃ ĐƯỢC CHỈNH SỬA LỖI LỆCH VỊ TRÍ -----------------
 function processData() {
     const rawText = document.getElementById('dataInput').value;
     if(!rawText.trim()) return;
@@ -133,12 +134,12 @@ function processData() {
     lines.forEach(line => {
         if (!line.trim()) return;
 
-        // Tự động lọc bỏ chuỗi tiền thưởng dài phía sau, sau đó quét lấy 6 số cuối cùng
-        let cleanLine = line.replace(/\d{9,}/g, '');
-        let finalPairs = cleanLine.match(/\b\d{2}\b/g);
+        // Quét lấy tất cả các cặp 2 chữ số có trong dòng
+        let finalPairs = line.match(/\b\d{2}\b/g);
         
         if (finalPairs && finalPairs.length >= 6) {
-            let targetBalls = finalPairs.slice(-6);
+            // Lấy chính xác 6 số đầu tiên từ trái qua phải (bỏ số phụ và giải thưởng ở đuôi)
+            let targetBalls = finalPairs.slice(0, 6);
             parsed.push([targetBalls[0], targetBalls[1], targetBalls[2], targetBalls[3], targetBalls[4], targetBalls[5]]);
         }
     });
@@ -229,7 +230,6 @@ function drawChartFull() {
     const yAxis = document.getElementById('yAxisFull'); yAxis.innerHTML = '';
 
     let maxVal = GameRegistry[currentGame].maxVal || 45;
-    // Cấu hình chuẩn riêng cho Lotto 5/35: Vị trí 1-5 max 35, riêng vị trí số 6 max 12
     if (currentGame === 'LOTTO 5/35') {
         maxVal = (currentPos === 6) ? 12 : 35;
     }
@@ -609,7 +609,7 @@ function renderAmDuongAnalysis() {
         rows.push(`
             <div class="draw-row">
                 <span>Kỳ #${i} ➔ #${i+1}</span>
-                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('   ')}</span>
+                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('    ')}</span>
                 <span style="color:var(--text-muted); font-size:10px;">(${curr.join(' ')})</span>
             </div>
         `);
