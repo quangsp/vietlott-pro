@@ -1,31 +1,31 @@
 const GameRegistry = {
-    'MEGA 6/45': { numCount: 6, maxVal: 45, desc: "Dán kết quả Mega 6/45 (6 số mỗi kỳ từ 01 đến 45)", placeholder: "Ví dụ: 05 12 23 34 41 45", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
-    'POWER 6/55': { numCount: 6, maxVal: 55, desc: "Dán kết quả Power 6/55 (6 số mỗi kỳ từ 01 đến 55)", placeholder: "Ví dụ: 02 11 19 28 33 40", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
-    'MAX 3D PRO': { numCount: 6, maxVal: 99, desc: "Dán kết quả Max 3D Pro (6 vị trí số)", placeholder: "Ví dụ: 12 34 56 78 90 12", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
-    'KENO': { numCount: 5, maxVal: 80, desc: "Dán kết quả Keno", placeholder: "Ví dụ: 03 15 21 30 39", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5]] },
-    'LOTTO 5/35': { numCount: 6, maxVal: 35, desc: "Dán kết quả Lotto 5/35 (6 vị trí số)", placeholder: "Ví dụ: 01 09 18 27 31 12", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] },
-    'XSKT (GĐB)': { numCount: 6, maxVal: 99, desc: "Dán kết quả Xổ Số Kiến Thiết (6 số)", placeholder: "Ví dụ: 07 13 20 26 35 41", regex: /(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})\s+(\d{2})/g, parseMatch: m => [m[1], m[2], m[3], m[4], m[5], m[6]] }
+    'MEGA 6/45': { numCount: 6, maxVal: 45, desc: "Dán kết quả Mega 6/45 (6 số mỗi kỳ từ 01 đến 45)", placeholder: "Ví dụ: 05 12 23 34 41 45" },
+    'POWER 6/55': { numCount: 6, maxVal: 55, desc: "Dán kết quả Power 6/55 (6 số mỗi kỳ từ 01 đến 55)", placeholder: "Ví dụ: 02 11 19 28 33 40" },
+    'MAX 3D PRO': { numCount: 6, maxVal: 99, desc: "Dán kết quả Max 3D Pro (6 vị trí số)", placeholder: "Ví dụ: 12 34 56 78 90 12" },
+    'KENO': { numCount: 5, maxVal: 80, desc: "Dán kết quả Keno", placeholder: "Ví dụ: 03 15 21 30 39" },
+    'LOTTO 5/35': { numCount: 6, maxVal: 35, desc: "Dán kết quả Lotto 5/35 (6 vị trí số)", placeholder: "Ví dụ: 01 09 18 27 31 12" },
+    'XSKT (GĐB)': { numCount: 6, maxVal: 99, desc: "Dán kết quả Xổ Số Kiến Thiết (6 số)", placeholder: "Ví dụ: 07 13 20 26 35 41" }
 };
 
-let savedData = JSON.parse(localStorage.getItem('vietlott_saved_data')) || {};
+let savedData = {};
 let currentGame = "";
 let currentView = "home"; 
 let currentPos = 1;
 let appData = [];
 let currentChartMode = 'tail'; 
 
-function registerGame(gameId, config) {
-    GameRegistry[gameId] = config;
-    if (!savedData[gameId]) savedData[gameId] = [];
-}
-
+// Hàm tự động tải file data.json khi vừa mở web (giữ nguyên tính năng của bản chuẩn)
 async function loadServerData() {
     try {
         const response = await fetch('data.json?t=' + new Date().getTime());
         if (response.ok) {
             savedData = await response.json();
+        } else {
+            savedData = JSON.parse(localStorage.getItem('vietlott_saved_data')) || {};
         }
-    } catch (e) {}
+    } catch (e) {
+        savedData = JSON.parse(localStorage.getItem('vietlott_saved_data')) || {};
+    }
     updateHomeCounts();
 }
 
@@ -36,13 +36,14 @@ window.addEventListener('DOMContentLoaded', () => {
 function updateHomeCounts() {
     Object.keys(GameRegistry).forEach(gameId => {
         const key = gameId.toLowerCase().replace(/[\/\s\(\)]/g, '-');
+        const count = savedData[gameId] ? savedData[gameId].length : 0;
         const el = document.getElementById(`count-${key.split('-')[0]}`);
-        if(el) el.innerText = (savedData[gameId] ? savedData[gameId].length : 0) + ' kỳ';
+        if(el) el.innerText = count + ' kỳ';
     });
 }
 
 function openGameMenu(gameId) {
-    if (!GameRegistry[gameId]) return alert("Game chưa được đăng ký!");
+    if (!GameRegistry[gameId]) return;
     currentGame = gameId;
     appData = savedData[gameId] || [];
     currentView = "menu";
@@ -55,7 +56,6 @@ function openGameMenu(gameId) {
     document.getElementById('oddEvenAnalysisView').style.display = 'none';
     document.getElementById('dausoAnalysisView').style.display = 'none';
     document.getElementById('amduongAnalysisView').style.display = 'none';
-    document.getElementById('threeDigitAnalysisView').style.display = 'none';
     
     document.getElementById('btnBack').style.display = 'flex';
     document.getElementById('menuGameTitle').innerText = `🎮 TÍNH NĂNG SOI CẦU: ${currentGame}`;
@@ -88,15 +88,11 @@ function showFeature(featureName) {
         currentView = "amduong";
         document.getElementById('amduongAnalysisView').style.display = 'block';
         renderAmDuongAnalysis();
-    } else if (featureName === 'threeDigitAnalysis') {
-        currentView = "threeDigitAnalysis";
-        document.getElementById('threeDigitAnalysisView').style.display = 'block';
-        renderThreeDigitAnalysis();
     }
 }
 
 function handleBack() {
-    if (['chart', 'tail', 'oddeven', 'dauso', 'amduong', 'threeDigitAnalysis'].includes(currentView)) {
+    if (['chart', 'tail', 'oddeven', 'dauso', 'amduong'].includes(currentView)) {
         openGameMenu(currentGame);
     } else if (currentView === 'menu') {
         goHome();
@@ -105,7 +101,7 @@ function handleBack() {
 
 function goHome() {
     currentView = "home";
-    ['chartView', 'tailAnalysisView', 'oddEvenAnalysisView', 'dausoAnalysisView', 'amduongAnalysisView', 'threeDigitAnalysisView', 'gameMenuView'].forEach(id => {
+    ['chartView', 'tailAnalysisView', 'oddEvenAnalysisView', 'dausoAnalysisView', 'amduongAnalysisView', 'gameMenuView'].forEach(id => {
         document.getElementById(id).style.display = 'none';
     });
     document.getElementById('btnBack').style.display = 'none';
@@ -127,23 +123,25 @@ function checkDataState() {
 function openModal() { document.getElementById('modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-// SỬ DỤNG LẠI THUẬT TOÁN REGEX CHUẨN XÁC TUYỆT ĐỐI CỦA BẢN CŨ
+// Thuật toán quét và lấy chuẩn 6 số cuối cùng (giúp vị trí tuyệt đối chính xác)
 function processData() {
     const rawText = document.getElementById('dataInput').value;
     if(!rawText.trim()) return;
 
-    const gameConfig = GameRegistry[currentGame];
-    if (!gameConfig || !gameConfig.regex) {
-        alert("Cấu hình game chưa hợp lệ!");
-        return;
-    }
+    let parsed = [];
+    const lines = rawText.split('\n');
 
-    let parsed = [], match;
-    gameConfig.regex.lastIndex = 0;
-    
-    while ((match = gameConfig.regex.exec(rawText)) !== null) {
-        parsed.push(gameConfig.parseMatch(match));
-    }
+    lines.forEach(line => {
+        if (!line.trim()) return;
+
+        let cleanLine = line.replace(/\d{9,}/g, '');
+        let finalPairs = cleanLine.match(/\b\d{2}\b/g);
+        
+        if (finalPairs && finalPairs.length >= 6) {
+            let targetBalls = finalPairs.slice(-6);
+            parsed.push([targetBalls[0], targetBalls[1], targetBalls[2], targetBalls[3], targetBalls[4], targetBalls[5]]);
+        }
+    });
 
     if(parsed.length === 0) { 
         alert(`Không tìm thấy kết quả hợp lệ! Vui lòng kiểm tra lại định dạng.`); 
@@ -163,7 +161,6 @@ function processData() {
     else if(currentView === 'oddeven') renderOddEvenAnalysis();
     else if(currentView === 'dauso') renderDauSoAnalysis();
     else if(currentView === 'amduong') renderAmDuongAnalysis();
-    else if(currentView === 'threeDigitAnalysis') renderThreeDigitAnalysis();
 }
 
 function clearCurrentGameData() {
@@ -178,7 +175,6 @@ function clearCurrentGameData() {
         else if(currentView === 'oddeven') renderOddEvenAnalysis();
         else if(currentView === 'dauso') renderDauSoAnalysis();
         else if(currentView === 'amduong') renderAmDuongAnalysis();
-        else if(currentView === 'threeDigitAnalysis') renderThreeDigitAnalysis();
     }
 }
 
@@ -226,6 +222,7 @@ function drawChart() {
     }
 }
 
+// 1. BIỂU ĐỒ SỐ ĐẦY ĐỦ
 function drawChartFull() {
     document.getElementById('chartTitleFull').innerText = `BIỂU ĐỒ SỐ ĐẦY ĐỦ - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartFull'); svg.innerHTML = '';
@@ -324,6 +321,7 @@ function drawChartFull() {
     });
 }
 
+// 2. BIỂU ĐỒ SỐ ĐUÔI
 function drawChartTail() {
     document.getElementById('chartTitleTail').innerText = `BIỂU ĐỒ SOI SỐ ĐUÔI - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartTail'); svg.innerHTML = '';
@@ -409,6 +407,7 @@ function drawChartTail() {
     });
 }
 
+// ----------------- TÍNH NĂNG 2: TRA CỨU ĐUÔI SỐ -----------------
 function renderTailAnalysis() {
     const searchVal = document.getElementById('tailSearchInput').value.trim();
     const searchTokens = searchVal ? searchVal.split(/[\s\,]+/) : [];
@@ -490,6 +489,7 @@ function renderTailAnalysis() {
     }
 }
 
+// ----------------- TÍNH NĂNG 3: PHÂN TÍCH CHẮN / LẺ -----------------
 function renderOddEvenAnalysis() {
     const maxNum = (currentGame === 'LOTTO 5/35') ? 35 : ((currentGame === 'MEGA 6/45') ? 45 : 55);
     const evenListEl = document.getElementById('matrixEvenList');
@@ -535,6 +535,7 @@ function highlightOddEvenNumber(numStr) {
     });
 }
 
+// ----------------- TÍNH NĂNG 4: THỐNG KÊ ĐẦU SỐ -----------------
 function renderDauSoAnalysis() {
     const limitVal = document.getElementById('dauKyLimitSelect').value;
     const suggEl = document.getElementById('dausoSuggestions');
@@ -585,6 +586,7 @@ function renderDauSoAnalysis() {
     });
 }
 
+// ----------------- TÍNH NĂNG 5: KHOẢNG CÁCH ÂM DƯƠNG -----------------
 function renderAmDuongAnalysis() {
     const historyEl = document.getElementById('amduongHistoryList');
     historyEl.innerHTML = '';
@@ -606,79 +608,11 @@ function renderAmDuongAnalysis() {
         rows.push(`
             <div class="draw-row">
                 <span>Kỳ #${i} ➔ #${i+1}</span>
-                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('    ')}</span>
+                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('   ')}</span>
                 <span style="color:var(--text-muted); font-size:10px;">(${curr.join(' ')})</span>
             </div>
         `);
     }
 
     historyEl.innerHTML = rows.reverse().join('');
-}
-
-function renderThreeDigitAnalysis() {
-    const headSearch = document.getElementById('searchHeadInput') ? document.getElementById('searchHeadInput').value.trim() : '';
-    const tailSearch = document.getElementById('searchTailInput') ? document.getElementById('searchTailInput').value.trim() : '';
-    const headHistoryEl = document.getElementById('headHistoryList');
-    const headMissingEl = document.getElementById('headMissingList');
-    const tailHistoryEl = document.getElementById('tailHistoryList');
-    const tailMissingEl = document.getElementById('tailMissingList');
-
-    if (!headHistoryEl) return;
-
-    headHistoryEl.innerHTML = ''; headMissingEl.innerHTML = '';
-    tailHistoryEl.innerHTML = ''; tailMissingEl.innerHTML = '';
-
-    if (appData.length === 0) {
-        const emptyMsg = '<div style="color:var(--text-muted); font-size:11px; text-align:center; padding: 10px;">Chưa có dữ liệu.</div>';
-        headHistoryEl.innerHTML = emptyMsg; tailHistoryEl.innerHTML = emptyMsg;
-        return;
-    }
-
-    const headAppeared = new Set();
-    const tailAppeared = new Set();
-
-    appData.forEach((draw, idx) => {
-        if (draw.length < 3) return;
-        const headTails = [parseInt(draw[0], 10) % 10, parseInt(draw[1], 10) % 10, parseInt(draw[2], 10) % 10].join('');
-        const len = draw.length;
-        const tailTails = [parseInt(draw[len-3], 10) % 10, parseInt(draw[len-2], 10) % 10, parseInt(draw[len-1], 10) % 10].join('');
-
-        headAppeared.add(headTails);
-        tailAppeared.add(tailTails);
-
-        const isHeadMatch = headSearch && headTails.includes(headSearch);
-        const headRow = document.createElement('div');
-        headRow.className = `triple-item ${isHeadMatch ? 'highlight' : ''}`;
-        headRow.innerHTML = `<span>Kỳ #${idx + 1}</span><span style="font-family:monospace; font-weight:bold; font-size:13px; color:var(--primary);">${headTails}</span>`;
-        headHistoryEl.appendChild(headRow);
-
-        const isTailMatch = tailSearch && tailTails.includes(tailSearch);
-        const tailRow = document.createElement('div');
-        tailRow.className = `triple-item ${isTailMatch ? 'highlight' : ''}`;
-        tailRow.innerHTML = `<span>Kỳ #${idx + 1}</span><span style="font-family:monospace; font-weight:bold; font-size:13px; color:var(--primary);">${tailTails}</span>`;
-        tailHistoryEl.appendChild(tailRow);
-    });
-
-    let headMissingHTML = '', tailMissingHTML = '';
-    let headMissingCount = 0, tailMissingCount = 0;
-
-    for (let i = 0; i <= 999; i++) {
-        const numStr = i.toString().padStart(3, '0');
-        if (!headAppeared.has(numStr)) {
-            if (!headSearch || numStr.includes(headSearch)) {
-                headMissingHTML += `<div class="triple-item" style="justify-content:center; color:#ef4444; font-family:monospace; font-weight:bold;">${numStr}</div>`;
-                headMissingCount++;
-            }
-        }
-        if (!tailAppeared.has(numStr)) {
-            if (!tailSearch || numStr.includes(tailSearch)) {
-                tailMissingHTML += `<div class="triple-item" style="justify-content:center; color:#ef4444; font-family:monospace; font-weight:bold;">${numStr}</div>`;
-                tailMissingCount++;
-            }
-        }
-    }
-
-    const allFoundMsg = '<div style="color:#10b981; font-size:11px; text-align:center; padding: 10px;">Đã về hết!</div>';
-    headMissingEl.innerHTML = headMissingCount > 0 ? headMissingHTML : allFoundMsg;
-    tailMissingEl.innerHTML = tailMissingCount > 0 ? tailMissingHTML : allFoundMsg;
 }
