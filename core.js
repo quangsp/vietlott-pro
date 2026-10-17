@@ -14,7 +14,6 @@ let currentPos = 1;
 let appData = [];
 let currentChartMode = 'tail'; 
 
-// Hàm tự động tải file data.json khi vừa mở web (giữ nguyên tính năng của bản chuẩn)
 async function loadServerData() {
     try {
         const response = await fetch('data.json?t=' + new Date().getTime());
@@ -123,23 +122,36 @@ function checkDataState() {
 function openModal() { document.getElementById('modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-// Thuật toán quét và lấy chuẩn 6 số cuối cùng (giúp vị trí tuyệt đối chính xác)
+// HÀM XỬ LÝ DỮ LIỆU ĐƯỢC FIX CHUẨN XÁC 100% VỊ TRÍ TỪ TRÁI QUA PHẢI
 function processData() {
     const rawText = document.getElementById('dataInput').value;
     if(!rawText.trim()) return;
 
     let parsed = [];
     const lines = rawText.split('\n');
+    const requiredCount = GameRegistry[currentGame].numCount;
 
     lines.forEach(line => {
         if (!line.trim()) return;
 
-        let cleanLine = line.replace(/\d{9,}/g, '');
-        let finalPairs = cleanLine.match(/\b\d{2}\b/g);
+        // Xóa sạch ngày tháng (VD: 17/10/2026 hoặc T7, 17/10/2026) ở đầu dòng
+        let cleanLine = line.replace(/(?:T[2-7]|CN)?[\s\,]*\d{1,2}\/\d{1,2}\/\d{4}/g, '');
+        // Xóa các dãy số tiền thưởng quá dài ở cuối dòng
+        cleanLine = cleanLine.replace(/\d{7,}/g, '');
+
+        // Quét lấy tất cả các cặp 2 chữ số chuẩn xác
+        let matches = cleanLine.match(/\b\d{2}\b/g);
         
-        if (finalPairs && finalPairs.length >= 6) {
-            let targetBalls = finalPairs.slice(-6);
-            parsed.push([targetBalls[0], targetBalls[1], targetBalls[2], targetBalls[3], targetBalls[4], targetBalls[5]]);
+        if (matches && matches.length >= requiredCount) {
+            // Lấy đúng số lượng bóng cần thiết từ trái sang phải (bỏ qua số dư thừa đầu/cuối)
+            let targetBalls = matches.slice(0, requiredCount);
+            
+            // Xử lý chống lệch nếu dòng có dính số thứ tự kỳ quay ở đầu
+            if (matches.length > requiredCount && parseInt(matches[0], 10) <= 9 && !currentGame.includes('MAX')) {
+                targetBalls = matches.slice(1, requiredCount + 1);
+            }
+
+            parsed.push(targetBalls);
         }
     });
 
@@ -178,7 +190,6 @@ function clearCurrentGameData() {
     }
 }
 
-// ----------------- CHUYỂN ĐỔI GIỮA 2 BIỂU ĐỒ -----------------
 function switchChartType(mode) {
     currentChartMode = mode;
     const btnFull = document.getElementById('btnChartFull');
@@ -200,7 +211,6 @@ function switchChartType(mode) {
     drawChart();
 }
 
-// ----------------- TÍNH NĂNG 1: BIỂU ĐỒ -----------------
 function renderTabs() {
     const tabsDiv = document.getElementById('posTabs'); tabsDiv.innerHTML = '';
     const numCount = GameRegistry[currentGame].numCount;
@@ -222,7 +232,6 @@ function drawChart() {
     }
 }
 
-// 1. BIỂU ĐỒ SỐ ĐẦY ĐỦ
 function drawChartFull() {
     document.getElementById('chartTitleFull').innerText = `BIỂU ĐỒ SỐ ĐẦY ĐỦ - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartFull'); svg.innerHTML = '';
@@ -321,7 +330,6 @@ function drawChartFull() {
     });
 }
 
-// 2. BIỂU ĐỒ SỐ ĐUÔI
 function drawChartTail() {
     document.getElementById('chartTitleTail').innerText = `BIỂU ĐỒ SOI SỐ ĐUÔI - VỊ TRÍ ${currentPos}`;
     const svg = document.getElementById('svgChartTail'); svg.innerHTML = '';
@@ -407,7 +415,6 @@ function drawChartTail() {
     });
 }
 
-// ----------------- TÍNH NĂNG 2: TRA CỨU ĐUÔI SỐ -----------------
 function renderTailAnalysis() {
     const searchVal = document.getElementById('tailSearchInput').value.trim();
     const searchTokens = searchVal ? searchVal.split(/[\s\,]+/) : [];
@@ -489,7 +496,6 @@ function renderTailAnalysis() {
     }
 }
 
-// ----------------- TÍNH NĂNG 3: PHÂN TÍCH CHẮN / LẺ -----------------
 function renderOddEvenAnalysis() {
     const maxNum = (currentGame === 'LOTTO 5/35') ? 35 : ((currentGame === 'MEGA 6/45') ? 45 : 55);
     const evenListEl = document.getElementById('matrixEvenList');
@@ -535,7 +541,6 @@ function highlightOddEvenNumber(numStr) {
     });
 }
 
-// ----------------- TÍNH NĂNG 4: THỐNG KÊ ĐẦU SỐ -----------------
 function renderDauSoAnalysis() {
     const limitVal = document.getElementById('dauKyLimitSelect').value;
     const suggEl = document.getElementById('dausoSuggestions');
@@ -586,7 +591,6 @@ function renderDauSoAnalysis() {
     });
 }
 
-// ----------------- TÍNH NĂNG 5: KHOẢNG CÁCH ÂM DƯƠNG -----------------
 function renderAmDuongAnalysis() {
     const historyEl = document.getElementById('amduongHistoryList');
     historyEl.innerHTML = '';
@@ -608,7 +612,7 @@ function renderAmDuongAnalysis() {
         rows.push(`
             <div class="draw-row">
                 <span>Kỳ #${i} ➔ #${i+1}</span>
-                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('   ')}</span>
+                <span style="font-family:monospace; color:#34d399; font-weight:bold;">${diffs.join('    ')}</span>
                 <span style="color:var(--text-muted); font-size:10px;">(${curr.join(' ')})</span>
             </div>
         `);
